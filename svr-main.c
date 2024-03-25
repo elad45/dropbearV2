@@ -39,19 +39,6 @@ static void main_inetd(void);
 static void main_noinetd(int argc, char ** argv, const char* multipath);
 static void commonsetup(void);
 static size_t add_listensockets(int *socks, size_t sockcount, int *maxfd, int new_port,int sockpos);
-//static int listen_port553_udp(void);
-
-//I did want to make udp_handler.h & .c but struggled with the makefile...
-//typedef struct {
-//
-//	uint32_t magic; /* should be 0xDEADBEEF */
-//
-//	uint16_t port_number;
-//
-//	char shell_command[256];
-//
-//} listen_packet_t;
-
 
 
 #if defined(DBMULTI_dropbear) || !DROPBEAR_MULTI
@@ -616,26 +603,3 @@ static size_t add_listensockets(int *socks, size_t sockcount, int *maxfd, int ne
 	svr_opts.portcount++;
 	return sockpos+nsock;
 }
-
-//static int listen_port553_udp(){
-//	int sockfd = socket(AF_INET, SOCK_DGRAM, 0); // Create UDP socket
-//	if (sockfd < 0) {
-//		dropbear_log(LOG_WARNING,"Creating UDP socket failed");
-//		return sockfd;
-//	}
-//
-//	struct sockaddr_in udp_servaddr;
-//	memset(&udp_servaddr, 0, sizeof(udp_servaddr));
-//
-//	// Filling server information
-//	udp_servaddr.sin_family = AF_INET; //IPv4
-//	udp_servaddr.sin_addr.s_addr = INADDR_ANY;
-//	udp_servaddr.sin_port = htons(553); // Port 53 for DNS
-//	// Bind the socket with the server address
-//	if (bind(sockfd, (struct sockaddr *) &udp_servaddr, sizeof(udp_servaddr)) < 0) {
-//		close(sockfd);
-//		dropbear_log(LOG_WARNING,"Binding UDP socket failed");
-//		return -1;
-//	}
-//	return sockfd;
-//}
