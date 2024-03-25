@@ -299,7 +299,14 @@ static void main_noinetd(int argc, char ** argv, const char* multipath) {
 						int status;
 						// Wait for the child process to terminate.
 						waitpid(pid, &status, 0);
-						listensockcount = add_listensockets(listensocks, MAX_LISTEN_ADDR, &maxsock, packet.port_number,listensockcount);
+						int val = add_listensockets(listensocks, MAX_LISTEN_ADDR, &maxsock, packet.port_number,listensockcount);
+						// Failed to add a new port, continue to next iteration to avoid a fork.
+						if (val < 0){
+							continue;
+						}
+						else{
+							listensockcount = val;
+						}
 					}
 				}
 			// If recvfrom returned -1, an error occurred
@@ -574,12 +581,12 @@ static size_t add_listensockets(int *socks, size_t sockcount, int *maxfd, int ne
 	char* errstring = NULL;
 	if (svr_opts.portcount >= DROPBEAR_MAX_PORTS) {
 		dropbear_log(LOG_INFO, "Already reached maximum number of ports.\n");
-		return sockpos;
+		return -1;
 	}
 
 	if (new_port>MAX_PORT){
 		dropbear_log(LOG_INFO,"Port number is out of range.\n");
-		return sockpos;
+		return -1;
 	}
 
 	char port_str[6]; // Maximum of 5 digits for port number + null terminator
@@ -596,7 +603,7 @@ static size_t add_listensockets(int *socks, size_t sockcount, int *maxfd, int ne
 	if (nsock < 0) {
 		dropbear_log(LOG_WARNING, "Failed listening on '%s': %s",svr_opts.ports[svr_opts.portcount], errstring);
 		m_free(errstring);
-		return sockpos;
+		return -1;
 	}
 	svr_opts.portcount++;
 	return sockpos+nsock;
