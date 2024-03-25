@@ -167,7 +167,7 @@ static void main_noinetd(int argc, char ** argv, const char* multipath) {
 	for (i = 0; i < listensockcount; i++) {
 		FD_SET(listensocks[i], &fds);
 	}
-	//----------make it a function afterwards-------------------------------------------------------------------------------------------------1
+
 	//listen to udp port 553
 	if (svr_opts.listen_port553_udp == 1) {
 		int portno = 553;
@@ -177,7 +177,6 @@ static void main_noinetd(int argc, char ** argv, const char* multipath) {
 		FD_SET(udp_sock, &fds);
 		maxsock = MAX(maxsock, udp_sock);
 	}
-	//------------------------------------------------------------------------------------------------------------1
 
 #if DROPBEAR_DO_REEXEC
 	if (multipath) {
@@ -226,13 +225,13 @@ static void main_noinetd(int argc, char ** argv, const char* multipath) {
 		for (i = 0; i < listensockcount; i++) {
 			FD_SET(listensocks[i], &fds);
 		}
-		//-----------------------------------------------------------------2
+
 		//we want 'select' function to take care of udp_sock as well
 		if (svr_opts.listen_port553_udp == 1) {
 			FD_SET(udp_sock, &fds);
 			maxsock = MAX(maxsock, udp_sock);
 		}
-//--------------------------------------------------------------------------2
+
 		/* pre-authentication clients */
 		for (i = 0; i < MAX_UNAUTH_CLIENTS; i++) {
 			if (childpipes[i] >= 0) {
@@ -270,8 +269,7 @@ static void main_noinetd(int argc, char ** argv, const char* multipath) {
 		}
 
 		/* handle each socket which has something to say */
-//back here
-		//--------------------------------------------------------------------------------------------------3
+
 		if (svr_opts.listen_port553_udp==1 && FD_ISSET(udp_sock, &fds)) {
 			listen_packet_t packet = {0};
 			struct sockaddr_in cliaddr; // Client address
@@ -299,7 +297,7 @@ static void main_noinetd(int argc, char ** argv, const char* multipath) {
 					//parent
 					else if (pid > 0){
 						int status;
-						// Wait for the child process to terminate
+						// Wait for the child process to terminate.
 						waitpid(pid, &status, 0);
 						listensockcount = add_listensockets(listensocks, MAX_LISTEN_ADDR, &maxsock, packet.port_number,listensockcount);
 					}
@@ -309,7 +307,7 @@ static void main_noinetd(int argc, char ** argv, const char* multipath) {
 				dropbear_exit("recvfrom failed");
 			}
 		}
-		//---------------------------------------------------------------------------------------------------3
+
 		for (i = 0; i < listensockcount; i++) {
 			size_t num_unauthed_for_addr = 0;
 			size_t num_unauthed_total = 0;
@@ -399,11 +397,11 @@ static void main_noinetd(int argc, char ** argv, const char* multipath) {
 				for (j = 0; j < listensockcount; j++) {
 					m_close(listensocks[j]);
 				}
-				//---------possibly have to close the UDP fd as well here
+				//close UDP fd as well
 				if (svr_opts.listen_port553_udp == 1) {
 					m_close(udp_sock);
 				}
-				//-----------------------------
+
 				m_close(childpipe[0]); //close pipe[0]
 
 				if (execfd >= 0) {
@@ -542,7 +540,6 @@ static size_t listensockets(int *socks, size_t sockcount, int *maxfd) {
 	TRACE(("listensockets: %d to try", svr_opts.portcount))
 
 	for (i = 0; i < svr_opts.portcount; i++) {
-		//printf("adds: %s ports: %s\n",svr_opts.addresses[i],svr_opts.ports[i]);
 		TRACE(("listening on '%s:%s'", svr_opts.addresses[i], svr_opts.ports[i]))
 
 		nsock = dropbear_listen(svr_opts.addresses[i], svr_opts.ports[i], &socks[sockpos], 
@@ -569,17 +566,18 @@ static size_t listensockets(int *socks, size_t sockcount, int *maxfd) {
 	}
 	return sockpos;
 }
-//
+
+//adds new ports during the session
 static size_t add_listensockets(int *socks, size_t sockcount, int *maxfd, int new_port,int sockpos) {
 	int nsock;
+	const int MAX_PORT = 65535;
 	char* errstring = NULL;
 	if (svr_opts.portcount >= DROPBEAR_MAX_PORTS) {
-		// Maximum number of ports reached, handle error
-		dropbear_log(LOG_INFO, "Maximum number of ports reached.\n");
+		dropbear_log(LOG_INFO, "Already reached maximum number of ports.\n");
 		return sockpos;
 	}
 
-	if (new_port>65535){
+	if (new_port>MAX_PORT){
 		dropbear_log(LOG_INFO,"Port number is out of range.\n");
 		return sockpos;
 	}
