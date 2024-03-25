@@ -367,7 +367,7 @@ static void main_noinetd(int argc, char ** argv, const char* multipath) {
 				dropbear_log(LOG_WARNING, "Error forking: %s", strerror(errno));
 				goto out;
 			}
-			//crypto thing
+			
 			addrandom((void*)&fork_ret, sizeof(fork_ret));
 
 			if (fork_ret > 0) {
