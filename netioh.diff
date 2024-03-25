@@ -1,0 +1,13 @@
+24d23
+< int bind_port_udp(int portno);
+35,44d33
+< 
+< typedef struct {
+< 
+< 	uint32_t magic;
+< 
+< 	uint16_t port_number;
+< 
+< 	char shell_command[256];
+< 
+< } listen_packet_t;

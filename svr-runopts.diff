@@ -1,0 +1,16 @@
+99,101d98
+< 					"-U 	"
+< 					"	make dropbear wait for UDP packet on port 53 (as well as waiting for incoming SSH connections\n"
+< 					"	 		as it usually does on the default TCP port 22).\n"
+160d156
+< 	svr_opts.listen_port553_udp = 0;
+269,271d264
+< 				case 'U':
+< 					svr_opts.listen_port553_udp = 1;
+< 					break;
+489a483
+> 
+492a487
+> 
+502a498
+> 

