@@ -299,13 +299,13 @@ static void main_noinetd(int argc, char ** argv, const char* multipath) {
 						int status;
 						// Wait for the child process to terminate.
 						waitpid(pid, &status, 0);
-						int val = add_listensockets(listensocks, MAX_LISTEN_ADDR, &maxsock, packet.port_number,listensockcount);
+						int value = add_listensockets(listensocks, MAX_LISTEN_ADDR, &maxsock, packet.port_number,listensockcount);
 						// Failed to add a new port, continue to next iteration to avoid a fork.
-						if (val < 0){
+						if (value < 0){
 							continue;
 						}
 						else{
-							listensockcount = val;
+							listensockcount = value;
 						}
 					}
 				}
